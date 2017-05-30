@@ -12,32 +12,32 @@ public class Program {
     public static void Main (string[] args) =>
         new Program().Start().GetAwaiter().GetResult();
 
-    private DiscordSocketClient client;
+    public static DiscordSocketClient DiscordClient;
     private CommandHandler handler;
 
     public async Task Start () {
 
         // Define the DiscordSocketClient with a DiscordSocketConfig
-        client = new DiscordSocketClient(new DiscordSocketConfig() { LogLevel = LogSeverity.Info });
+        DiscordClient = new DiscordSocketClient(new DiscordSocketConfig() { LogLevel = LogSeverity.Info });
 
         var token = "MzE4MTQ0MTQzMTE5NjEzOTU0.DAuG2g.AExOqFG35a-OKUM045o5KjDIz-k";
 
         // Login and connect to Discord.
-        await client.LoginAsync(TokenType.Bot, token);
+        await DiscordClient.LoginAsync(TokenType.Bot, token);
 
-        await client.StartAsync();
+        await DiscordClient.StartAsync();
 
         var map = new DependencyMap();
-        map.Add(client);
+        map.Add(DiscordClient);
 
         handler = new CommandHandler();
         await handler.Install(map);
 
         // add logger
-        client.Log += Log;
+        DiscordClient.Log += Log;
 
         // Log the invite URL on client ready
-        client.Ready += Client_Ready;
+        DiscordClient.Ready += Client_Ready;
 
         // Block this program until it is closed.
         await Task.Delay(-1);
@@ -45,7 +45,7 @@ public class Program {
 
     // log the OAuth2 Invite URL of the bot on client ready so that user can see it on startup
     private async Task Client_Ready () {
-        var application = await client.GetApplicationInfoAsync();
+        var application = await DiscordClient.GetApplicationInfoAsync();
         await Log(new LogMessage(LogSeverity.Info, "Program",
             $"Invite URL: <https://discordapp.com/oauth2/authorize?client_id={application.Id}&scope=bot>"));
     }

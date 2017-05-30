@@ -39,11 +39,16 @@ public class AudioService {
         }
     }
 
-    public async Task SendAudioAsync (IGuild guild, IMessageChannel channel, string YTLink) {
+    public async Task SendAudioAsync (IGuild guild, IMessageChannel channel, string UserInput) {
 
         YoutubeClient YTC = new YoutubeClient();
+        
+        if (!UserInput.Contains("youtube.com")) {
+            var IDList = await YTC.SearchAsync(UserInput);
+            UserInput = IDList.First();
+        }
 
-        VideoInfo VideoInfo = await YTC.GetVideoInfoAsync(YoutubeClient.ParseVideoId(YTLink));
+        VideoInfo VideoInfo = await YTC.GetVideoInfoAsync(UserInput);
 
         AudioStreamInfo ASI = VideoInfo.AudioStreams.OrderBy(x => x.Bitrate).Last();
 
@@ -60,13 +65,15 @@ public class AudioService {
 
         IAudioClient client;
 
+        await Program.DiscordClient.SetGameAsync(Title);
+
         if (ConnectedChannels.TryGetValue(guild.Id, out client)) {
-            
+
             var Output = CreateStream(Path).StandardOutput.BaseStream;
             var Stream = client.CreatePCMStream(AudioApplication.Music, 2880);
             await Output.CopyToAsync(Stream);
             await Stream.FlushAsync();
-
+            await Program.DiscordClient.SetGameAsync("");
         }
     }
 

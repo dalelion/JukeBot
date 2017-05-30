@@ -29,6 +29,8 @@ public class AudioModule : ModuleBase<ICommandContext> {
 
     [Command("play", RunMode = RunMode.Async)]
     public async Task PlayCmd ([Remainder] string YTLink) {
+        await _service.JoinAudio(Context.Guild, (Context.User as IVoiceState).VoiceChannel);
         await _service.SendAudioAsync(Context.Guild, Context.Channel, YTLink);
+        await _service.LeaveAudio(Context.Guild);
     }
 }
