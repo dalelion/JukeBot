@@ -1,1 +1,1 @@
-dotnet DiscordExampleBot.dll
+dotnet JukeBot.dll
