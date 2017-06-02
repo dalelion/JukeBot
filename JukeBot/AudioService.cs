@@ -10,10 +10,9 @@ using YoutubeExplode.Models.MediaStreams;
 using System.Linq;
 using System;
 using System.Text.RegularExpressions;
+using System.Collections.Generic;
 
 public class AudioService {
-
-    public static Task SongPlaying;
 
     private readonly ConcurrentDictionary<ulong, IAudioClient> ConnectedChannels = new ConcurrentDictionary<ulong, IAudioClient>();
 
@@ -42,10 +41,12 @@ public class AudioService {
     public async Task SendAudioAsync (IGuild guild, IMessageChannel channel, string UserInput) {
 
         YoutubeClient YTC = new YoutubeClient();
-        
-        if (!UserInput.Contains("youtube.com")) {
-            var IDList = await YTC.SearchAsync(UserInput);
-            UserInput = IDList.First();
+
+        if (UserInput.ToLower().Contains("youtube.com")) {
+            UserInput = YoutubeClient.ParseVideoId(UserInput);
+        } else {
+            IEnumerable<String> SearchList = await YTC.SearchAsync(UserInput);
+            UserInput = SearchList.First();
         }
 
         VideoInfo VideoInfo = await YTC.GetVideoInfoAsync(UserInput);
@@ -63,16 +64,16 @@ public class AudioService {
         using (var Out = File.Create(Path))
             await Input.CopyToAsync(Out);
 
-        IAudioClient client;
+        IAudioClient AudioClient;
 
         await Program.DiscordClient.SetGameAsync(Title);
 
-        if (ConnectedChannels.TryGetValue(guild.Id, out client)) {
+        if (ConnectedChannels.TryGetValue(guild.Id, out AudioClient)) {
 
             var Output = CreateStream(Path).StandardOutput.BaseStream;
-            var Stream = client.CreatePCMStream(AudioApplication.Music, 2880);
-            await Output.CopyToAsync(Stream);
-            await Stream.FlushAsync();
+            var DiscordStream = AudioClient.CreatePCMStream(AudioApplication.Music, 2880);
+            await Output.CopyToAsync(DiscordStream);
+            await DiscordStream.FlushAsync();
             await Program.DiscordClient.SetGameAsync("");
         }
     }
@@ -85,4 +86,10 @@ public class AudioService {
             RedirectStandardOutput = true
         });
     }
+
+    public static Task Log (LogMessage msg) {
+        Console.WriteLine(msg.ToString());
+        return Task.CompletedTask;
+    }
+
 }

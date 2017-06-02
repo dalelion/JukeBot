@@ -8,35 +8,22 @@ using System.Runtime.InteropServices;
 using System.Diagnostics;
 
 public class PublicModule : ModuleBase {
-    [Command("invite")]
-    [Summary("Returns the OAuth2 Invite URL of the bot")]
-    public async Task Invite () {
-        var application = await Context.Client.GetApplicationInfoAsync();
-        await ReplyAsync(
-            $"A user with `MANAGE_SERVER` can invite me to your server here: <https://discordapp.com/oauth2/authorize?client_id={application.Id}&scope=bot>");
-    }
-
-    [Command("leave")]
-    [Summary("Instructs the bot to leave this Guild.")]
-    [RequireUserPermission(GuildPermission.ManageGuild), RequireContext(ContextType.Guild)]
-    public async Task Leave () {
-        await ReplyAsync("Leaving~");
-        await Context.Guild.LeaveAsync();
-    }
-
+    
     [Command("say")]
     [Alias("echo")]
     [Summary("Echos the provided input")]
-    public async Task Say ([Remainder] string input) {
-        await ReplyAsync(input);
+    public async Task Say ([Remainder] string Input) {
+        await Log(new LogMessage(LogSeverity.Info, "Echo", $"Bot said {Input}"));
+        await ReplyAsync(Input);
     }
 
     [Command("info")]
     public async Task Info () {
-        var application = await Context.Client.GetApplicationInfoAsync();
+        await Log(new LogMessage(LogSeverity.Info, "Info", "Bot reported info."));
+        var Application = await Context.Client.GetApplicationInfoAsync();
         await ReplyAsync(
             $"{Format.Bold("Info")}\n" +
-            $"- Author: {application.Owner.Username} (ID {application.Owner.Id})\n" +
+            $"- Author: {Application.Owner.Username} (ID {Application.Owner.Id})\n" +
             $"- Library: Discord.Net ({DiscordConfig.Version})\n" +
             $"- Runtime: {RuntimeInformation.FrameworkDescription} {RuntimeInformation.OSArchitecture}\n" +
             $"- Uptime: {GetUptime()}\n\n" +
@@ -49,7 +36,26 @@ public class PublicModule : ModuleBase {
         );
     }
 
-    private static string GetUptime ()
-        => (DateTime.Now - Process.GetCurrentProcess().StartTime).ToString(@"dd\.hh\:mm\:ss");
+    [Command("help", RunMode = RunMode.Async)]
+    [Alias("h")]
+    public async Task LeaveCmd () {
+        await ReplyAsync("**!play {Song name or link}** = Plays the song *[Also !p]*\n" +
+                        "**!join** = Bot will join your channel *[Also !j]*\n" +
+                        "**!leave** = Bot will leave its channel *[Also !l]*\n" +
+                        "**!queue {Song name or link}** = Add a song to the queue *[Also !q]*\n" +
+                        "**!playqueue** = Plays the queue *[Also !playq]*\n!" +
+                        "**!clearqueue** = Clears the queue *[Also !clearq]*\n" +
+                        "**!playlist {PlaylistLink}** = Plays a whole playlist *[Also !pl]*\n" +
+                        "**!info** = Displays bot info");
+        await Log(new LogMessage(LogSeverity.Info, "Help", "User asked for help."));
+    }
+
+    private static string GetUptime () => (DateTime.Now - Process.GetCurrentProcess().StartTime).ToString(@"dd\.hh\:mm\:ss");
+
     private static string GetHeapSize () => Math.Round(GC.GetTotalMemory(true) / (1024.0 * 1024.0), 2).ToString();
+
+    public static Task Log (LogMessage msg) {
+        Console.WriteLine(msg.ToString());
+        return Task.CompletedTask;
+    }
 }
