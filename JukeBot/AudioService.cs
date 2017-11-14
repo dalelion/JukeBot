@@ -18,6 +18,7 @@ public class AudioService {
 
     public async Task JoinAudio (IGuild guild, IVoiceChannel target) {
         IAudioClient client;
+
         if (ConnectedChannels.TryGetValue(guild.Id, out client)) {
             return;
         }
@@ -37,7 +38,7 @@ public class AudioService {
             await client.StopAsync();
         }
     }
-
+    
     public async Task SendAudioAsync (IGuild guild, IMessageChannel channel, string UserInput) {
 
         YoutubeClient YTC = new YoutubeClient();

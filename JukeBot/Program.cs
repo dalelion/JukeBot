@@ -4,9 +4,6 @@ using Discord;
 using Discord.WebSocket;
 using Discord.Commands;
 
-//MzE4MTQ0MTQzMTE5NjEzOTU0.DAuG2g.AExOqFG35a-OKUM045o5KjDIz-k; // JukeBot
-//MzE4NTQ1ODk4MjUyNjY0ODMz.DAz8fw.Xhw6I7pXWa4K2To5lfx1Ebklp_Y; // TestingBot
-
 public class Program {
     // Convert our sync main to an async main.
     public static void Main (string[] args) =>
@@ -20,7 +17,7 @@ public class Program {
         // Define the DiscordSocketClient with a DiscordSocketConfig
         DiscordClient = new DiscordSocketClient(new DiscordSocketConfig() { LogLevel = LogSeverity.Info });
 
-        String BotToken = "MzE4MTQ0MTQzMTE5NjEzOTU0.DAuG2g.AExOqFG35a-OKUM045o5KjDIz-k"; //JukeBot
+        String BotToken = System.IO.File.ReadAllText("Token.txt");
 
         // Login and connect to Discord.
         await DiscordClient.LoginAsync(TokenType.Bot, BotToken);

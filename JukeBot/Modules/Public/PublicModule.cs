@@ -43,10 +43,11 @@ public class PublicModule : ModuleBase {
                         "**!join** = Bot will join your channel *[Also !j]*\n" +
                         "**!leave** = Bot will leave its channel *[Also !l]*\n" +
                         "**!queue {Song name or link}** = Add a song to the queue *[Also !q]*\n" +
-                        "**!playqueue** = Plays the queue *[Also !playq]*\n!" +
+                        "**!playqueue** = Plays the queue *[Also !playq]*\n" +
                         "**!clearqueue** = Clears the queue *[Also !clearq]*\n" +
                         "**!playlist {PlaylistLink}** = Plays a whole playlist *[Also !pl]*\n" +
-                        "**!info** = Displays bot info");
+                        "**!info** = Displays bot info\n" +
+                        "**!removeat {index}** = Removes the element at the index");
         await Log(new LogMessage(LogSeverity.Info, "Help", "User asked for help."));
     }
 

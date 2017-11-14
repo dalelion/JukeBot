@@ -98,12 +98,30 @@ public class AudioModule : ModuleBase<ICommandContext> {
         }
 
         await ReplyAsync("Sorry, the queue is empty, !queue (or !q) to add more!");
-        await Log(new LogMessage(LogSeverity.Info, "Queue", "Que is empty"));
+        await Log(new LogMessage(LogSeverity.Info, "Queue", "Queue is empty"));
 
         await _service.LeaveAudio(Context.Guild);
         await Log(new LogMessage(LogSeverity.Info, "Queue", $"Bot is leaving {Context.Channel}"));
     }
-    
+
+    [Command("removeat", RunMode = RunMode.Async)] // (add range ability?)
+    public async Task RemoveNext ([Remainder] int Index) {
+        Queue.RemoveAt(Index);
+        await ReplyAsync($"Removed item {Queue.ElementAt(Index)} at index {Index}");
+        await Log(new LogMessage(LogSeverity.Info, "Queue", $"Removed item {Queue.ElementAt(Index)} at index {Index}"));
+    }
+
+    [Command("stop", RunMode = RunMode.Async)] // (add range ability?)
+    public async Task StopSong () {
+        
+        //await _service
+
+    }
+
+    //Insert, List queue, view at index (range?)
+    //Play next song
+    //Song length at start of song
+
     public static Task Log (LogMessage msg) {
         Console.WriteLine(msg.ToString());
         return Task.CompletedTask;
