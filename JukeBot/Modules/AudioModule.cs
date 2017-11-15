@@ -11,15 +11,15 @@ using YoutubeExplode.Models;
 namespace JukeBot.Modules {
 
     public class AudioModule : ModuleBase<ICommandContext> {
-
+        
         private readonly AudioService _Service;
-
-        static List<String> Queue = new List<string>();
-        String Reply, NextSong, LeftInQueue;
-
+        
         public AudioModule( AudioService Service ) {
             _Service = Service;
         }
+
+        static List<String> Queue = new List<string>();
+        String Reply, NextSong, LeftInQueue;
 
         // You *MUST* mark these commands with 'RunMode.Async'
         // otherwise the bot will not respond until the Task times out.

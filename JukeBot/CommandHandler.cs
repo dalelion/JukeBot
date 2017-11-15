@@ -21,7 +21,7 @@ namespace JukeBot {
 
             map.Add( new AudioService() );
 
-            //TODO: add ImageService
+            map.Add( new ImageService() );
 
             await commands.AddModulesAsync( Assembly.GetEntryAssembly() );
 

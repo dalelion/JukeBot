@@ -6,6 +6,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
+using JukeBot.Services;
 
 namespace JukeBot.Modules {
 
@@ -16,7 +17,7 @@ namespace JukeBot.Modules {
         [Summary( "Echos the provided input" )]
         public async Task Say( [Remainder] string Input ) {
             await Log( new LogMessage( LogSeverity.Info, "Echo", $"Bot said {Input}" ) );
-            await ReplyAsync( Input );
+            await ReplyAsync( Input + " Test");
         }
 
         [Command( "info" )]
