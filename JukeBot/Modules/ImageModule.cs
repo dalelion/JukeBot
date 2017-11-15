@@ -16,6 +16,8 @@ namespace JukeBot.Modules {
             _Service = Service;
         }
 
+        [Command( "jpg", RunMode = RunMode.Async )]
+        [Summary( "Searches Google Images for the first image that matches" )]
         public async Task JPG( String SearchTerm ) {
 
             await _Service.GoogleImageSearch( Context.Guild, Context.Channel, SearchTerm );
