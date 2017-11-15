@@ -4,42 +4,45 @@ using Discord;
 using Discord.WebSocket;
 using Discord.Commands;
 
-public class Program {
-    // Convert our sync main to an async main.
-    public static void Main (string[] args) =>
-        new Program().Start().GetAwaiter().GetResult();
+namespace JukeBot {
 
-    public static DiscordSocketClient DiscordClient;
-    private CommandHandler handler;
+    public class Program {
+        // Convert our sync main to an async main.
+        public static void Main( string[] args ) =>
+            new Program().Start().GetAwaiter().GetResult();
 
-    public async Task Start () {
+        public static DiscordSocketClient DiscordClient;
+        private CommandHandler handler;
 
-        // Define the DiscordSocketClient with a DiscordSocketConfig
-        DiscordClient = new DiscordSocketClient(new DiscordSocketConfig() { LogLevel = LogSeverity.Info });
+        public async Task Start() {
 
-        String BotToken = System.IO.File.ReadAllText("Token.txt");
+            // Define the DiscordSocketClient with a DiscordSocketConfig
+            DiscordClient = new DiscordSocketClient( new DiscordSocketConfig() { LogLevel = LogSeverity.Info } );
 
-        // Login and connect to Discord.
-        await DiscordClient.LoginAsync(TokenType.Bot, BotToken);
+            String BotToken = System.IO.File.ReadAllText( "Token.txt" );
 
-        await DiscordClient.StartAsync();
+            // Login and connect to Discord.
+            await DiscordClient.LoginAsync( TokenType.Bot, BotToken );
 
-        var map = new DependencyMap();
-        map.Add(DiscordClient);
+            await DiscordClient.StartAsync();
 
-        handler = new CommandHandler();
-        await handler.Install(map);
+            var map = new DependencyMap();
+            map.Add( DiscordClient );
 
-        // Add logger
-        DiscordClient.Log += Log;
-        
-        // Block this program until it is closed.
-        await Task.Delay(-1);
-    }
+            handler = new CommandHandler();
+            await handler.Install( map );
 
-    // Bare minimum Logging function for both DiscordSocketClient and CommandService
-    public static Task Log (LogMessage msg) {
-        Console.WriteLine(msg.ToString());
-        return Task.CompletedTask;
+            // Add logger
+            DiscordClient.Log += Log;
+
+            // Block this program until it is closed.
+            await Task.Delay( -1 );
+        }
+
+        // Bare minimum Logging function for both DiscordSocketClient and CommandService
+        public static Task Log( LogMessage msg ) {
+            Console.WriteLine( msg.ToString() );
+            return Task.CompletedTask;
+        }
     }
 }

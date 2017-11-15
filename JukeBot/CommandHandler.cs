@@ -2,44 +2,52 @@
 using System.Reflection;
 using Discord.Commands;
 using Discord.WebSocket;
+using JukeBot.Services;
 
-public class CommandHandler {
-    private CommandService commands;
-    private DiscordSocketClient client;
-    private IDependencyMap map;
+namespace JukeBot {
 
-    public async Task Install (IDependencyMap _map) {
-        // Create Command Service, inject it into Dependency Map
-        client = _map.Get<DiscordSocketClient>();
-        commands = new CommandService();
-        commands.Log += Program.Log;
+    public class CommandHandler {
+        private CommandService commands;
+        private DiscordSocketClient client;
+        private IDependencyMap map;
 
-        map = _map;
+        public async Task Install( IDependencyMap _map ) {
+            // Create Command Service, inject it into Dependency Map
+            client = _map.Get<DiscordSocketClient>();
+            commands = new CommandService();
+            commands.Log += Program.Log;
 
-        map.Add(new AudioService());
+            map = _map;
 
-        await commands.AddModulesAsync(Assembly.GetEntryAssembly());
+            map.Add( new AudioService() );
 
-        client.MessageReceived += HandleCommand;
-    }
+            //TODO: add ImageService
 
-    public async Task HandleCommand (SocketMessage parameterMessage) {
-        // Don't handle the command if it is a system message
-        var message = parameterMessage as SocketUserMessage;
-        if (message == null) return;
+            await commands.AddModulesAsync( Assembly.GetEntryAssembly() );
 
-        // Mark where the prefix ends and the command begins
-        int argPos = 0;
-        // Determine if the message has a valid prefix, adjust argPos 
-        if (!(message.HasMentionPrefix(client.CurrentUser, ref argPos) || message.HasCharPrefix('!', ref argPos))) return;
+            client.MessageReceived += HandleCommand;
+        }
 
-        // Create a Command Context
-        var context = new CommandContext(client, message);
-        // Execute the Command, store the result
-        var result = await commands.ExecuteAsync(context, argPos, map);
+        public async Task HandleCommand( SocketMessage parameterMessage ) {
+            // Don't handle the command if it is a system message
+            var message = parameterMessage as SocketUserMessage;
+            if ( message == null )
+                return;
 
-        // If the command failed, notify the user
-        if (!result.IsSuccess)
-            await message.Channel.SendMessageAsync($"**Error:** {result.ErrorReason}");
+            // Mark where the prefix ends and the command begins
+            int argPos = 0;
+            // Determine if the message has a valid prefix, adjust argPos 
+            if ( !( message.HasMentionPrefix( client.CurrentUser, ref argPos ) || message.HasCharPrefix( '!', ref argPos ) ) )
+                return;
+
+            // Create a Command Context
+            var context = new CommandContext( client, message );
+            // Execute the Command, store the result
+            var result = await commands.ExecuteAsync( context, argPos, map );
+
+            // If the command failed, notify the user
+            if ( !result.IsSuccess )
+                await message.Channel.SendMessageAsync( $"**Error:** {result.ErrorReason}" );
+        }
     }
 }
