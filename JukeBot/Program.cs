@@ -7,32 +7,35 @@ using Discord.Commands;
 namespace JukeBot {
 
     public class Program {
-        // Convert our sync main to an async main.
+        // Asyncronouse main method
         public static void Main( string[] args ) =>
             new Program().Start().GetAwaiter().GetResult();
 
         public static DiscordSocketClient DiscordClient;
-        private CommandHandler handler;
+        private CommandHandler Handler;
 
+        /// <summary>
+        /// 
+        /// </summary>
         public async Task Start() {
 
             // Define the DiscordSocketClient with a DiscordSocketConfig
             DiscordClient = new DiscordSocketClient( new DiscordSocketConfig() { LogLevel = LogSeverity.Info } );
-
-            String BotToken = System.IO.File.ReadAllText( "Token.txt" );
-
-            // Login and connect to Discord.
-            await DiscordClient.LoginAsync( TokenType.Bot, BotToken );
+            
+            try {
+            await DiscordClient.LoginAsync( TokenType.Bot, System.IO.File.ReadAllText( "Token.txt" ) );
+            } catch (Exception E) {
+                await Log( new LogMessage( LogSeverity.Critical, "Token", "Invalid Token File" ) );
+            }
 
             await DiscordClient.StartAsync();
 
-            var map = new DependencyMap();
-            map.Add( DiscordClient );
+            DependencyMap Map = new DependencyMap();
+            Map.Add( DiscordClient );
 
-            handler = new CommandHandler();
-            await handler.Install( map );
-
-            // Add logger
+            CommandHandler Handler = new CommandHandler();
+            await Handler.Install( Map );
+            
             DiscordClient.Log += Log;
 
             // Block this program until it is closed.
