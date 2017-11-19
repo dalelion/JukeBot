@@ -62,7 +62,7 @@ namespace JukeBot.Services {
             Regex RGX = new Regex( "[^a-zA-Z0-9 -]" );
             Title = RGX.Replace( Title, "" );
 
-            String Path = "Songs/" + $"{Title}.{ASI.Container.GetFileExtension()}";
+            String Path = "/Songs/" + $"{Title}.{ASI.Container.GetFileExtension()}";
 
             using ( var Input = await YTC.GetMediaStreamAsync( ASI ) )
             using ( var Out = File.Create( Path ) )
@@ -70,7 +70,7 @@ namespace JukeBot.Services {
 
             IAudioClient AudioClient;
 
-            await Program.DiscordClient.SetGameAsync( Title );
+            await JukeBot.DiscordClient.SetGameAsync( Title );
 
             if ( ConnectedChannels.TryGetValue( Guild.Id, out AudioClient ) ) {
 
@@ -78,7 +78,7 @@ namespace JukeBot.Services {
                 var DiscordStream = AudioClient.CreatePCMStream( AudioApplication.Music, 2880 );
                 await Output.CopyToAsync( DiscordStream );
                 await DiscordStream.FlushAsync();
-                await Program.DiscordClient.SetGameAsync( "" );
+                await JukeBot.DiscordClient.SetGameAsync( "" );
             }
         }
 

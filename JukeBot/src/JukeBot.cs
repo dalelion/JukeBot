@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
@@ -6,11 +7,11 @@ using Discord.Commands;
 
 namespace JukeBot {
 
-    public class Program {
+    public class JukeBot {
 
-        // Asyncronouse main method
+        // Async main method
         public static void Main( string[] args ) =>
-            new Program().Start().GetAwaiter().GetResult();
+            new JukeBot().Start().GetAwaiter().GetResult();
 
         public static DiscordSocketClient DiscordClient;
 

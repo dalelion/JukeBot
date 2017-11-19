@@ -18,6 +18,9 @@
     <None Update="Resources\libsodium.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Resources\opus.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Resources\StartBot.bat">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

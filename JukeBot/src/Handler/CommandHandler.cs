@@ -3,7 +3,6 @@ using System.Reflection;
 using Discord.Commands;
 using Discord.WebSocket;
 using JukeBot.Services;
-using JukeBot.Modules;
 
 namespace JukeBot {
 
@@ -17,13 +16,12 @@ namespace JukeBot {
             // Create Command Service, inject it into Dependency Map
             Client = _map.Get<DiscordSocketClient>();
             Commands = new CommandService();
-            Commands.Log += Program.Log;
+            Commands.Log += JukeBot.Log;
 
             Map = _map;
 
             Map.Add( new AudioService() );
-
-
+            
             Map.Add( new ImageService() );
 
             await Commands.AddModulesAsync( Assembly.GetEntryAssembly() );
