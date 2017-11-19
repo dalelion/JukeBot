@@ -31,13 +31,16 @@ namespace JukeBot.Services {
             var val = this.Pause;
             this.Pause = true;
             Percent = Math.Max( 0, Math.Min( 100, Percent ) ) / 100;
-            if ( this.AudioData.Length > 0 ) await new Task( () => { this.AudioData.Seek( (long) ( Percent * this.AudioData.Length ), SeekOrigin.Begin ); } );
-            this.Pause = val;
+            if ( this.AudioData.Length > 0 )
+                await Task.Run( () => {
+                    var Position = (long) ( Percent * this.AudioData.Length );
+                    Position -= Position % 8192;
+                    this.AudioData.Seek( Position, SeekOrigin.Begin );
+                    this.Pause = val;
+                } );
         }
 
-        public async Task PauseAudio() {
-            await new Task( () => { this.Pause = !this.Pause; } );
-        }
+        public async Task PauseAudio() => await Task.Run( () => { this.Pause = !this.Pause; } );
 
         public async Task LeaveAudio( IGuild Guild ) {
             IAudioClient Client;
@@ -69,12 +72,13 @@ namespace JukeBot.Services {
 #else
             String Path = "Songs/";
 #endif
-            using ( var Input = await YTC.GetMediaStreamAsync( ASI ) ) {
-                Directory.CreateDirectory( Path );
-                using ( var Out = File.Create( Path + Name ) ) {
-                    await Input.CopyToAsync( Out );
+            if ( !File.Exists( Path + Name ) )
+                using ( var Input = await YTC.GetMediaStreamAsync( ASI ) ) {
+                    Directory.CreateDirectory( Path );
+                    using ( var Out = File.Create( Path + Name ) ) {
+                        await Input.CopyToAsync( Out );
+                    }
                 }
-            }
 
             IAudioClient AudioClient;
 
@@ -86,16 +90,14 @@ namespace JukeBot.Services {
                 await Output.CopyToAsync( this.AudioData );
                 await Output.FlushAsync();
                 Output.Dispose();
-                int length_read;
-                long pos = 0;
+                int read_length;
                 var buffer = new byte[8192];
-                this.AudioData.Seek( pos, SeekOrigin.Begin );
+                this.AudioData.Seek( 0x0, SeekOrigin.Begin );
                 var DiscordStream = AudioClient.CreatePCMStream( AudioApplication.Music, 2880 );
-                while ( pos < this.AudioData.Length )
+                while ( this.AudioData.Position < this.AudioData.Length )
                     if ( !this.Pause ) {
-                        length_read = await this.AudioData.ReadAsync( buffer, 0, 8192 );
-                        pos += length_read;
-                        await DiscordStream.WriteAsync( buffer, 0, length_read );
+                        read_length = await this.AudioData.ReadAsync( buffer, 0, 8192 );
+                        await DiscordStream.WriteAsync( buffer, 0, read_length );
                     } else {
                         await DiscordStream.WriteAsync( new byte[512], 0, 512 );
                     }
