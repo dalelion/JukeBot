@@ -62,7 +62,9 @@ namespace JukeBot.Services {
             Regex RGX = new Regex( "[^a-zA-Z0-9 -]" );
             Title = RGX.Replace( Title, "" );
 
-            String Path = "/Songs/" + $"{Title}.{ASI.Container.GetFileExtension()}";
+            Directory.CreateDirectory( "Songs/" );
+
+            String Path = "Songs/" + $"{Title}.{ASI.Container.GetFileExtension()}";
 
             using ( var Input = await YTC.GetMediaStreamAsync( ASI ) )
             using ( var Out = File.Create( Path ) )
@@ -84,7 +86,7 @@ namespace JukeBot.Services {
 
         private Process CreateStream( String Path ) {
             return Process.Start( new ProcessStartInfo {
-                FileName = "/Resources/ffmpeg.exe",
+                FileName = "Resources/ffmpeg.exe",
                 Arguments = $"-hide_banner -loglevel panic -i \"{Path}\" -ac 2 -f s16le -ar 48000 pipe:1",
                 UseShellExecute = false,
                 RedirectStandardOutput = true
