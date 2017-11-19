@@ -3,14 +3,12 @@ using System.IO;
 using System.Linq;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
 using Discord;
 using Discord.Audio;
 using YoutubeExplode;
 using YoutubeExplode.Models;
-using YoutubeExplode.Models.MediaStreams;
 
 namespace JukeBot.Services {
     public class AudioService {
@@ -21,93 +19,86 @@ namespace JukeBot.Services {
         public async Task JoinAudio( IGuild Guild, IVoiceChannel Target ) {
             IAudioClient Client;
 
-            if ( ConnectedChannels.TryGetValue( Guild.Id, out Client ) ) {
-                return;
-            }
-            if ( Target.Guild.Id != Guild.Id ) {
-                return;
-            }
+            if ( this.ConnectedChannels.TryGetValue( Guild.Id, out Client ) ) return;
+            if ( Target.Guild.Id != Guild.Id ) return;
 
             var AudioClient = await Target.ConnectAsync();
 
-            if ( ConnectedChannels.TryAdd( Guild.Id, AudioClient ) ) { }
+            if ( this.ConnectedChannels.TryAdd( Guild.Id, AudioClient ) ) { }
         }
 
-        public async Task SeekAudio(double Percent) {
-            bool val = this.Pause;
+        public async Task SeekAudio( double Percent ) {
+            var val = this.Pause;
             this.Pause = true;
-            Percent = Math.Max(0, Math.Min(100, Percent)) / 100;
-            if ( this.AudioData.Length > 0 ) {
-                this.AudioData.Seek((long)(Percent * this.AudioData.Length), SeekOrigin.Begin );
-            }
+            Percent = Math.Max( 0, Math.Min( 100, Percent ) ) / 100;
+            if ( this.AudioData.Length > 0 ) await new Task( () => { this.AudioData.Seek( (long) ( Percent * this.AudioData.Length ), SeekOrigin.Begin ); } );
             this.Pause = val;
         }
 
         public async Task PauseAudio() {
-            this.Pause = !this.Pause;
-        }
-        public async Task LeaveAudio( IGuild Guild ) {
-            IAudioClient Client;
-            if ( this.ConnectedChannels.Count > 0 && this.ConnectedChannels.TryRemove( Guild.Id, out Client ) ) {
-                await Client.StopAsync();
-            }
+            await new Task( () => { this.Pause = !this.Pause; } );
         }
 
-        public async Task SendAudioAsync( IGuild Guild, String UserInput ) {
-            YoutubeClient YTC = new YoutubeClient();
+        public async Task LeaveAudio( IGuild Guild ) {
+            IAudioClient Client;
+            if ( this.ConnectedChannels.Count > 0 && this.ConnectedChannels.TryRemove( Guild.Id, out Client ) ) await Client.StopAsync();
+        }
+
+        public async Task SendAudioAsync( IGuild Guild, string UserInput ) {
+            var YTC = new YoutubeClient();
 
             if ( UserInput.ToLower().Contains( "youtube.com" ) ) {
                 UserInput = YoutubeClient.ParseVideoId( UserInput );
             } else {
-                IEnumerable<String> SearchList = await YTC.SearchAsync( UserInput );
+                var SearchList = await YTC.SearchAsync( UserInput );
                 UserInput = SearchList.First();
             }
 
-            VideoInfo VideoInfo = await YTC.GetVideoInfoAsync( UserInput );
+            var VideoInfo = await YTC.GetVideoInfoAsync( UserInput );
 
-            AudioStreamInfo ASI = VideoInfo.AudioStreams.OrderBy( x => x.Bitrate ).Last();
+            var ASI = VideoInfo.AudioStreams.OrderBy( x => x.Bitrate ).Last();
 
-            String Title = VideoInfo.Title;
+            var Title = VideoInfo.Title;
 
-            Regex RGX = new Regex( "[^a-zA-Z0-9 -]" );
+            var RGX = new Regex( "[^a-zA-Z0-9 -]" );
             Title = RGX.Replace( Title, "" );
 
-            String Name = $"{Title}.{ASI.Container.GetFileExtension()}";
+            var Name = $"{Title}.{ASI.Container.GetFileExtension()}";
 #if DEBUG
-            String Path = "bin/Debug/netcoreapp1.1/Songs/";
+            var Path = "bin/Debug/netcoreapp1.1/Songs/";
 #else
             String Path = "Songs/";
 #endif
             using ( var Input = await YTC.GetMediaStreamAsync( ASI ) ) {
                 Directory.CreateDirectory( Path );
-                using ( var Out = File.Create( Path + Name ) )
+                using ( var Out = File.Create( Path + Name ) ) {
                     await Input.CopyToAsync( Out );
+                }
             }
 
             IAudioClient AudioClient;
 
             await JukeBot.DiscordClient.SetGameAsync( Title );
 
-            if ( ConnectedChannels.TryGetValue( Guild.Id, out AudioClient ) ) {
-                var Output = CreateStream( Path + Name ).StandardOutput.BaseStream;
+            if ( this.ConnectedChannels.TryGetValue( Guild.Id, out AudioClient ) ) {
+                var Output = this.CreateStream( Path + Name ).StandardOutput.BaseStream;
                 await this.AudioData.FlushAsync();
-                await Output.CopyToAsync(this.AudioData);
+                await Output.CopyToAsync( this.AudioData );
                 await Output.FlushAsync();
                 Output.Dispose();
                 int length_read;
                 long pos = 0;
-                byte[] buffer = new byte[8192];
+                var buffer = new byte[8192];
                 this.AudioData.Seek( pos, SeekOrigin.Begin );
-                var DiscordStream = AudioClient.CreatePCMStream(AudioApplication.Music, 2880);
-                while ( pos < this.AudioData.Length) {
-                    if ( !this.Pause) {
+                var DiscordStream = AudioClient.CreatePCMStream( AudioApplication.Music, 2880 );
+                while ( pos < this.AudioData.Length )
+                    if ( !this.Pause ) {
                         length_read = await this.AudioData.ReadAsync( buffer, 0, 8192 );
                         pos += length_read;
                         await DiscordStream.WriteAsync( buffer, 0, length_read );
                     } else {
                         await DiscordStream.WriteAsync( new byte[512], 0, 512 );
                     }
-                }
                 await this.AudioData.FlushAsync();
                 //await Output.CopyToAsync(DiscordStream);
                 await DiscordStream.FlushAsync();
@@ -115,7 +106,7 @@ namespace JukeBot.Services {
             }
         }
 
-        private Process CreateStream( String Path ) {
+        private Process CreateStream( string Path ) {
 #if DEBUG
             return Process.Start( new ProcessStartInfo {
                 FileName = @"bin/Debug/netcoreapp1.1/Resources/ffmpeg.exe",
