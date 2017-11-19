@@ -12,7 +12,7 @@ using YoutubeExplode.Models;
 
 namespace JukeBot.Services {
     public class AudioService {
-        private MemoryStream AudioData = new MemoryStream();
+        private MemoryStream AudioData;
         private bool Pause;
         private readonly ConcurrentDictionary<ulong, IAudioClient> ConnectedChannels = new ConcurrentDictionary<ulong, IAudioClient>();
 
@@ -86,20 +86,28 @@ namespace JukeBot.Services {
 
             if ( this.ConnectedChannels.TryGetValue( Guild.Id, out AudioClient ) ) {
                 var Output = this.CreateStream( Path + Name ).StandardOutput.BaseStream;
-                await this.AudioData.FlushAsync();
+                this.AudioData = new MemoryStream();
                 await Output.CopyToAsync( this.AudioData );
                 await Output.FlushAsync();
                 Output.Dispose();
-                int read_length;
-                var buffer = new byte[8192];
+                int read_length = 0;
+                bool flipflop = false;
+                int buffer_size = 2048;
+                var buffer = new[] {new byte[buffer_size], new byte[buffer_size]};
                 this.AudioData.Seek( 0x0, SeekOrigin.Begin );
                 var DiscordStream = AudioClient.CreatePCMStream( AudioApplication.Music, 2880 );
+                Task writer;
+                Task<int> reader;
                 while ( this.AudioData.Position < this.AudioData.Length )
                     if ( !this.Pause ) {
-                        read_length = await this.AudioData.ReadAsync( buffer, 0, 8192 );
-                        await DiscordStream.WriteAsync( buffer, 0, read_length );
+                        writer = DiscordStream.WriteAsync(buffer[flipflop ? 0 : 1], 0, read_length);
+                        flipflop = !flipflop;
+                        reader = this.AudioData.ReadAsync(buffer[flipflop ? 0 : 1], 0, buffer_size);
+                        read_length = await reader;
+                        await writer;
                     } else {
                         await DiscordStream.WriteAsync( new byte[512], 0, 512 );
+                        read_length = 0;
                     }
                 await this.AudioData.FlushAsync();
                 //await Output.CopyToAsync(DiscordStream);
