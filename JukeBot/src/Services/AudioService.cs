@@ -84,12 +84,12 @@ namespace JukeBot.Services {
 
         private Process CreateStream( String Path ) {
 #if DEBUG
-            return Process.Start(new ProcessStartInfo {
+            return Process.Start( new ProcessStartInfo {
                 FileName = @"bin/Debug/netcoreapp1.1/Resources/ffmpeg.exe",
                 Arguments = $"-hide_banner -loglevel panic -i \"{Path}\" -ac 2 -f s16le -ar 48000 pipe:1",
                 UseShellExecute = false,
                 RedirectStandardOutput = true
-            });
+            } );
 #else
             return Process.Start( new ProcessStartInfo {
                 FileName = "Resources/ffmpeg.exe",
@@ -99,7 +99,7 @@ namespace JukeBot.Services {
             } );
 #endif
         }
-    
+
         public static Task Log( LogMessage Message ) {
             Console.WriteLine( Message.ToString() );
             return Task.CompletedTask;

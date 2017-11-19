@@ -15,7 +15,7 @@ namespace JukeBot {
         public static DiscordSocketClient DiscordClient;
 
         public async Task Start() {
-            DiscordClient = new DiscordSocketClient( new DiscordSocketConfig() {LogLevel = LogSeverity.Info} );
+            DiscordClient = new DiscordSocketClient( new DiscordSocketConfig() { LogLevel = LogSeverity.Info } );
 
             try {
                 await DiscordClient.LoginAsync( TokenType.Bot, System.IO.File.ReadAllText( "Resources/Token.txt" ) );
