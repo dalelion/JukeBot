@@ -14,6 +14,8 @@ using YoutubeExplode.Models.MediaStreams;
 
 namespace JukeBot.Services {
     public class AudioService {
+        private MemoryStream AudioData = new MemoryStream();
+        private bool Pause;
         private readonly ConcurrentDictionary<ulong, IAudioClient> ConnectedChannels = new ConcurrentDictionary<ulong, IAudioClient>();
 
         public async Task JoinAudio( IGuild Guild, IVoiceChannel Target ) {
@@ -31,9 +33,22 @@ namespace JukeBot.Services {
             if ( ConnectedChannels.TryAdd( Guild.Id, AudioClient ) ) { }
         }
 
+        public async Task SeekAudio(double Percent) {
+            bool val = this.Pause;
+            this.Pause = true;
+            Percent = Math.Max(0, Math.Min(100, Percent)) / 100;
+            if ( this.AudioData.Length > 0 ) {
+                this.AudioData.Seek((long)(Percent * this.AudioData.Length), SeekOrigin.Begin );
+            }
+            this.Pause = val;
+        }
+
+        public async Task PauseAudio() {
+            this.Pause = !this.Pause;
+        }
         public async Task LeaveAudio( IGuild Guild ) {
             IAudioClient Client;
-            if ( ConnectedChannels.TryRemove( Guild.Id, out Client ) ) {
+            if ( this.ConnectedChannels.Count > 0 && this.ConnectedChannels.TryRemove( Guild.Id, out Client ) ) {
                 await Client.StopAsync();
             }
         }
@@ -74,9 +89,27 @@ namespace JukeBot.Services {
             await JukeBot.DiscordClient.SetGameAsync( Title );
 
             if ( ConnectedChannels.TryGetValue( Guild.Id, out AudioClient ) ) {
-                var Output = CreateStream( Path ).StandardOutput.BaseStream;
-                var DiscordStream = AudioClient.CreatePCMStream( AudioApplication.Music, 2880 );
-                await Output.CopyToAsync( DiscordStream );
+                var Output = CreateStream( Path + Name ).StandardOutput.BaseStream;
+                await this.AudioData.FlushAsync();
+                await Output.CopyToAsync(this.AudioData);
+                await Output.FlushAsync();
+                Output.Dispose();
+                int length_read;
+                long pos = 0;
+                byte[] buffer = new byte[8192];
+                this.AudioData.Seek( pos, SeekOrigin.Begin );
+                var DiscordStream = AudioClient.CreatePCMStream(AudioApplication.Music, 2880);
+                while ( pos < this.AudioData.Length) {
+                    if ( !this.Pause) {
+                        length_read = await this.AudioData.ReadAsync( buffer, 0, 8192 );
+                        pos += length_read;
+                        await DiscordStream.WriteAsync( buffer, 0, length_read );
+                    } else {
+                        await DiscordStream.WriteAsync( new byte[512], 0, 512 );
+                    }
+                }
+                await this.AudioData.FlushAsync();
+                //await Output.CopyToAsync(DiscordStream);
                 await DiscordStream.FlushAsync();
                 await JukeBot.DiscordClient.SetGameAsync( "" );
             }

@@ -45,6 +45,19 @@ namespace JukeBot.Modules {
             await Log( new LogMessage( LogSeverity.Info, "Play", $"Bot is leaving {Context.Channel}" ) );
         }
 
+        [Command( "seek" , RunMode = RunMode.Async)]
+        public async Task SeekCmd( [Remainder] string PercentDuration ) {
+            double p = 0;
+            if ( double.TryParse( PercentDuration, out p ) ) {
+                await this._Service.SeekAudio( p );
+            }
+        }
+
+        [Command("pause", RunMode = RunMode.Async)]
+        public async Task PauseCmd() {
+            await this._Service.PauseAudio();
+        }
+
         [Command( "playlist", RunMode = RunMode.Async )]
         [Alias( "pl" )]
         public async Task PlaylistCmd( [Remainder] string PlaylistLink ) {
