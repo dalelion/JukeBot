@@ -84,7 +84,7 @@ namespace JukeBot.Services {
 
         private Process CreateStream( String Path ) {
             return Process.Start( new ProcessStartInfo {
-                FileName = "ffmpeg.exe",
+                FileName = "/Resources/ffmpeg.exe",
                 Arguments = $"-hide_banner -loglevel panic -i \"{Path}\" -ac 2 -f s16le -ar 48000 pipe:1",
                 UseShellExecute = false,
                 RedirectStandardOutput = true

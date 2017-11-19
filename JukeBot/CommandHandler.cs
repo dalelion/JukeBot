@@ -3,51 +3,88 @@ using System.Reflection;
 using Discord.Commands;
 using Discord.WebSocket;
 using JukeBot.Services;
+using JukeBot.Modules;
 
 namespace JukeBot {
 
     public class CommandHandler {
-        private CommandService commands;
-        private DiscordSocketClient client;
-        private IDependencyMap map;
+
+        private CommandService Commands;
+        private DiscordSocketClient Client;
+        private IDependencyMap Map;
 
         public async Task Install( IDependencyMap _map ) {
             // Create Command Service, inject it into Dependency Map
-            client = _map.Get<DiscordSocketClient>();
-            commands = new CommandService();
-            commands.Log += Program.Log;
+            Client = _map.Get<DiscordSocketClient>();
+            Commands = new CommandService();
+            Commands.Log += Program.Log;
 
-            map = _map;
+            Map = _map;
 
-            map.Add( new AudioService() );
+            Map.Add( new AudioService() );
 
-            map.Add( new ImageService() );
 
-            await commands.AddModulesAsync( Assembly.GetEntryAssembly() );
+            Map.Add( new ImageService() );
 
-            client.MessageReceived += HandleCommand;
+            await Commands.AddModulesAsync( Assembly.GetEntryAssembly() );
+
+            Client.MessageReceived += PrefixCommandHandler;
+            Client.MessageReceived += PostfixCommandHandler;
         }
 
-        public async Task HandleCommand( SocketMessage parameterMessage ) {
+        public async Task PrefixCommandHandler( SocketMessage ParameterMessage ) {
             // Don't handle the command if it is a system message
-            var message = parameterMessage as SocketUserMessage;
-            if ( message == null )
+            SocketUserMessage Message = ParameterMessage as SocketUserMessage;
+            if ( Message == null )
                 return;
 
-            // Mark where the prefix ends and the command begins
-            int argPos = 0;
+            int PrefixPosition = 0;
             // Determine if the message has a valid prefix, adjust argPos 
-            if ( !( message.HasMentionPrefix( client.CurrentUser, ref argPos ) || message.HasCharPrefix( '!', ref argPos ) ) )
+            if ( !( Message.HasMentionPrefix( Client.CurrentUser, ref PrefixPosition ) || Message.HasCharPrefix( '!', ref PrefixPosition ) ) )
                 return;
 
             // Create a Command Context
-            var context = new CommandContext( client, message );
+            CommandContext Context = new CommandContext( Client, Message );
+
             // Execute the Command, store the result
-            var result = await commands.ExecuteAsync( context, argPos, map );
+            IResult Result = await Commands.ExecuteAsync( Context, PrefixPosition, Map );
 
             // If the command failed, notify the user
-            if ( !result.IsSuccess )
-                await message.Channel.SendMessageAsync( $"**Error:** {result.ErrorReason}" );
+            if ( !Result.IsSuccess )
+                await Message.Channel.SendMessageAsync( $"**Error:** {Result.ErrorReason}" );
+
+        }
+
+        public async Task PostfixCommandHandler( SocketMessage ParameterMessage ) {
+
+            // Don't handle the command if it is a system message
+            SocketUserMessage Message = ParameterMessage as SocketUserMessage;
+            if ( Message == null || Message.Author.IsBot || Message.Author.Id.Equals( Client.CurrentUser.Id ) )
+                return;
+
+            string Content = Message.Content.ToLower();
+
+            switch ( Content.Substring( Content.Length - 4 ) ) {
+                case ".jpg":
+                    Content = "jpg " + Content.Substring( 0, Content.Length - 4 );
+                    break;
+                case ".gif":
+                    Content = "gif " + Content.Substring( 0, Content.Length - 4 );
+                    break;
+                default:
+                    return;
+            }
+
+            // Create a Command Context
+            CommandContext Context = new CommandContext( Client, Message );
+
+            // Execute the Command, store the result
+            IResult Result = await Commands.ExecuteAsync( Context, Content, Map );
+
+            // If the command failed, notify the user
+            if ( !Result.IsSuccess )
+                await Message.Channel.SendMessageAsync( $"**Error:** {Result.ErrorReason}" );
+
         }
     }
 }
