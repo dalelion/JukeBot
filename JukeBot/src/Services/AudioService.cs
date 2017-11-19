@@ -56,6 +56,7 @@ namespace JukeBot.Services {
 
             Regex RGX = new Regex( "[^a-zA-Z0-9 -]" );
             Title = RGX.Replace( Title, "" );
+
             String Name = $"{Title}.{ASI.Container.GetFileExtension()}";
 #if DEBUG
             String Path = "bin/Debug/netcoreapp1.1/Songs/";
@@ -67,6 +68,7 @@ namespace JukeBot.Services {
                 using ( var Out = File.Create( Path + Name ) )
                     await Input.CopyToAsync( Out );
             }
+
             IAudioClient AudioClient;
 
             await JukeBot.DiscordClient.SetGameAsync( Title );
