@@ -8,9 +8,7 @@ using Discord;
 
 namespace JukeBot.Services {
     public class ImageService {
-
         public async Task<String> GoogleImageSearch( String Query, int Num = 1 ) {
-
             //TODO: Num has no purpose right now, add implementation to get the X number image result
 
             String Key = "AIzaSyCimF2sJLwecmssiwDg8Jdb-f4NAgv-RBk", CX = "001762016596902704548:ugobeno8bsc", Content;
@@ -20,18 +18,14 @@ namespace JukeBot.Services {
             Content = Response.Content.ReadAsStringAsync().Result;
 
             return Content.Substring( Content.LastIndexOf( "\"src\":" ) ).Split( '\"' )[3];
-
         }
 
         public async Task<String> TenorSearch( String Query ) {
-
             HttpResponseMessage Response = await new HttpClient().GetAsync( $"http://api.tenor.com/v1/search?q={Query}&key=12GNQGC43ETG" );
 
             String Content = Response.Content.ReadAsStringAsync().Result;
 
             return Content.Substring( Content.IndexOf( "\"url\":" ) ).Split( '\"' )[3];
-
         }
-
     }
 }

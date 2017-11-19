@@ -8,9 +8,7 @@ using Discord.Commands;
 using JukeBot.Services;
 
 namespace JukeBot.Modules {
-
     public class ImageModule : ModuleBase<ICommandContext> {
-
         private readonly ImageService _Service;
 
         public ImageModule( ImageService Service ) {
@@ -20,7 +18,7 @@ namespace JukeBot.Modules {
         [Command( "jpg", RunMode = RunMode.Async )]
         [Summary( "Searches Google Images for the first image that matches" )]
         public async Task JPG( [Remainder] String SearchTerm ) {
-            await ReplyAsync( await _Service.GoogleImageSearch( SearchTerm ));
+            await ReplyAsync( await _Service.GoogleImageSearch( SearchTerm ) );
         }
 
         [Command( "gif", RunMode = RunMode.Async )]
@@ -29,6 +27,5 @@ namespace JukeBot.Modules {
         public async Task GIF( [Remainder] String SearchTerm ) {
             await ReplyAsync( await _Service.TenorSearch( SearchTerm ) );
         }
-
     }
 }

@@ -6,9 +6,7 @@ using JukeBot.Services;
 using JukeBot.Modules;
 
 namespace JukeBot {
-
     public class CommandHandler {
-
         private CommandService Commands;
         private DiscordSocketClient Client;
         private IDependencyMap Map;
@@ -22,7 +20,6 @@ namespace JukeBot {
             Map = _map;
 
             Map.Add( new AudioService() );
-
 
             Map.Add( new ImageService() );
 
@@ -52,11 +49,9 @@ namespace JukeBot {
             // If the command failed, notify the user
             if ( !Result.IsSuccess )
                 await Message.Channel.SendMessageAsync( $"**Error:** {Result.ErrorReason}" );
-
         }
 
         public async Task PostfixCommandHandler( SocketMessage ParameterMessage ) {
-
             // Don't handle the command if it is a system message
             SocketUserMessage Message = ParameterMessage as SocketUserMessage;
             if ( Message == null || Message.Author.IsBot || Message.Author.Id.Equals( Client.CurrentUser.Id ) )
@@ -84,7 +79,6 @@ namespace JukeBot {
             // If the command failed, notify the user
             if ( !Result.IsSuccess )
                 await Message.Channel.SendMessageAsync( $"**Error:** {Result.ErrorReason}" );
-
         }
     }
 }

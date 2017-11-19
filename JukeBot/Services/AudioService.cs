@@ -12,11 +12,8 @@ using YoutubeExplode;
 using YoutubeExplode.Models;
 using YoutubeExplode.Models.MediaStreams;
 
-
 namespace JukeBot.Services {
-
     public class AudioService {
-
         private readonly ConcurrentDictionary<ulong, IAudioClient> ConnectedChannels = new ConcurrentDictionary<ulong, IAudioClient>();
 
         public async Task JoinAudio( IGuild Guild, IVoiceChannel Target ) {
@@ -31,8 +28,7 @@ namespace JukeBot.Services {
 
             var AudioClient = await Target.ConnectAsync();
 
-            if ( ConnectedChannels.TryAdd( Guild.Id, AudioClient ) ) {
-            }
+            if ( ConnectedChannels.TryAdd( Guild.Id, AudioClient ) ) { }
         }
 
         public async Task LeaveAudio( IGuild Guild ) {
@@ -43,7 +39,6 @@ namespace JukeBot.Services {
         }
 
         public async Task SendAudioAsync( IGuild Guild, String UserInput ) {
-
             YoutubeClient YTC = new YoutubeClient();
 
             if ( UserInput.ToLower().Contains( "youtube.com" ) ) {
@@ -65,15 +60,14 @@ namespace JukeBot.Services {
             String Path = "Songs/" + $"{Title}.{ASI.Container.GetFileExtension()}";
 
             using ( var Input = await YTC.GetMediaStreamAsync( ASI ) )
-            using ( var Out = File.Create( Path ) )
-                await Input.CopyToAsync( Out );
+                using ( var Out = File.Create( Path ) )
+                    await Input.CopyToAsync( Out );
 
             IAudioClient AudioClient;
 
             await Program.DiscordClient.SetGameAsync( Title );
 
             if ( ConnectedChannels.TryGetValue( Guild.Id, out AudioClient ) ) {
-
                 var Output = CreateStream( Path ).StandardOutput.BaseStream;
                 var DiscordStream = AudioClient.CreatePCMStream( AudioApplication.Music, 2880 );
                 await Output.CopyToAsync( DiscordStream );
@@ -95,6 +89,5 @@ namespace JukeBot.Services {
             Console.WriteLine( Message.ToString() );
             return Task.CompletedTask;
         }
-
     }
 }

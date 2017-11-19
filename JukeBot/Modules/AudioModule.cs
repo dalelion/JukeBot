@@ -9,11 +9,9 @@ using YoutubeExplode;
 using YoutubeExplode.Models;
 
 namespace JukeBot.Modules {
-
     public class AudioModule : ModuleBase<ICommandContext> {
-        
         private readonly AudioService _Service;
-        
+
         public AudioModule( AudioService Service ) {
             _Service = Service;
         }
@@ -84,9 +82,7 @@ namespace JukeBot.Modules {
         [Command( "playqueue", RunMode = RunMode.Async )]
         [Alias( "playq" )]
         public async Task PlayQueue() {
-
             while ( Queue.Count > 0 ) {
-
                 await _Service.LeaveAudio( Context.Guild );
                 await _Service.JoinAudio( Context.Guild, ( Context.User as IVoiceState ).VoiceChannel );
 
@@ -97,7 +93,6 @@ namespace JukeBot.Modules {
 
                 await _Service.SendAudioAsync( Context.Guild, Queue.First() );
                 Queue.RemoveAt( 0 );
-
             }
 
             await ReplyAsync( "Sorry, the queue is empty, !queue (or !q) to add more!" );
@@ -116,10 +111,8 @@ namespace JukeBot.Modules {
 
         [Command( "stop", RunMode = RunMode.Async )] // (add range ability?)
         public async Task StopSong() {
-
             await Log( new LogMessage( LogSeverity.Error, "StopMethod", "Not Implemented", new NotImplementedException() ) );
             //await _service
-
         }
 
         //TODO: ****************
@@ -131,6 +124,5 @@ namespace JukeBot.Modules {
             Console.WriteLine( msg.ToString() );
             return Task.CompletedTask;
         }
-
     }
 }

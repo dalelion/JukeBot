@@ -5,9 +5,7 @@ using Discord.WebSocket;
 using Discord.Commands;
 
 namespace JukeBot {
-
     public class Program {
-
         // Asyncronouse main method
         public static void Main( string[] args ) =>
             new Program().Start().GetAwaiter().GetResult();
@@ -15,8 +13,7 @@ namespace JukeBot {
         public static DiscordSocketClient DiscordClient;
 
         public async Task Start() {
-
-            DiscordClient = new DiscordSocketClient( new DiscordSocketConfig() { LogLevel = LogSeverity.Info } );
+            DiscordClient = new DiscordSocketClient( new DiscordSocketConfig() {LogLevel = LogSeverity.Info} );
 
             try {
                 await DiscordClient.LoginAsync( TokenType.Bot, System.IO.File.ReadAllText( "Resources/Token.txt" ) );
