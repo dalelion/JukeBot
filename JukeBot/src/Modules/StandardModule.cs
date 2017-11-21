@@ -1,12 +1,12 @@
 ﻿using System;
+using System.Text;
 using System.Linq;
+using System.Diagnostics;
 using System.Threading.Tasks;
+using System.Runtime.InteropServices;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using System.Runtime.InteropServices;
-using System.Diagnostics;
-using JukeBot.Services;
 
 namespace JukeBot.Modules {
     public class StandardModule : ModuleBase {
@@ -39,15 +39,32 @@ namespace JukeBot.Modules {
         [Command( "help", RunMode = RunMode.Async )]
         [Alias( "h" )]
         public async Task Help() {
-            await ReplyAsync( "**!play {Song name or link}** = Plays the song *[Also !p]*\n" +
-                              "**!join** = Bot will join your channel *[Also !j]*\n" +
-                              "**!leave** = Bot will leave its channel *[Also !l]*\n" +
-                              "**!queue {Song name or link}** = Add a song to the queue *[Also !q]*\n" +
-                              "**!playqueue** = Plays the queue *[Also !playq]*\n" +
-                              "**!clearqueue** = Clears the queue *[Also !clearq]*\n" +
-                              "**!playlist {PlaylistLink}** = Plays a whole playlist *[Also !pl]*\n" +
-                              "**!info** = Displays bot info\n" +
-                              "**!removeat {index}** = Removes the element at the index" );
+
+            StringBuilder SB = new StringBuilder();
+
+            SB.AppendLine( "**Control Commands**" );
+            SB.AppendLine( "**!info** = Displays bot info" );
+            SB.AppendLine( "**!join** = Bot will join your channel *[Also !j]*" );
+            SB.AppendLine( "**!leave** = Bot will leave its channel *[Also !l]*" );
+
+            SB.AppendLine();
+
+            SB.AppendLine( "**Audio Commands**" );
+            SB.AppendLine( "**!play {Song name or link}** = Plays the song *[Also !p]*" );
+            SB.AppendLine( "**!playlist {PlaylistLink}** = Plays a whole playlist *[Also !pl]*" );
+            SB.AppendLine( "**!queue {Song name or link}** = Add a song to the queue *[Also !q]*" );
+            SB.AppendLine( "**!playqueue** = Plays the queue *[Also !playq]*" );
+            SB.AppendLine( "**!clearqueue** = Clears the queue *[Also !clearq]*" );
+            SB.AppendLine( "**!removeat {index}** = Removes the element at the index." );
+
+            SB.AppendLine();
+
+            SB.AppendLine( "**Image Commands**" );
+            SB.AppendLine( "**!jpg** {Search Query} [Also {Search Query}**.jpg**]" );
+            SB.AppendLine( "**!gif** {Search Query} [Also {Search Query}**.gif**]" );
+
+            await ReplyAsync( SB.ToString() );
+
             await Log( new LogMessage( LogSeverity.Info, "Help", "User asked for help." ) );
         }
 
