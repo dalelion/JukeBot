@@ -7,8 +7,7 @@ using Discord.Commands;
 
 namespace JukeBot {
     public class JukeBot {
-
-        // Async main method
+        
         public static void Main( string[] args ) =>
             new JukeBot().Start().GetAwaiter().GetResult();
 
