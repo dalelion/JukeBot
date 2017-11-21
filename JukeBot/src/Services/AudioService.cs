@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
+using System.Threading;
 using Discord;
 using Discord.Audio;
 using YoutubeExplode;
@@ -13,7 +14,9 @@ using YoutubeExplode.Models;
 namespace JukeBot.Services {
     public class AudioService {
         private MemoryStream AudioData;
-        private bool Pause;
+        private bool Pause = true;
+        private bool Stop = true;
+        private bool Playing = false;
         private readonly ConcurrentDictionary<ulong, IAudioClient> ConnectedChannels = new ConcurrentDictionary<ulong, IAudioClient>();
 
         public async Task JoinAudio( IGuild Guild, IVoiceChannel Target ) {
@@ -44,7 +47,14 @@ namespace JukeBot.Services {
 
         public async Task LeaveAudio( IGuild Guild ) {
             IAudioClient Client;
-            if ( this.ConnectedChannels.Count > 0 && this.ConnectedChannels.TryRemove( Guild.Id, out Client ) ) await Client.StopAsync();
+            if ( this.Playing ) {
+                this.Pause = this.Stop = true;
+                while ( this.Playing ) {
+                    Thread.Sleep( 1000 );
+                }
+            } else {
+                if (this.ConnectedChannels.Count > 0 && this.ConnectedChannels.TryRemove(Guild.Id, out Client)) await Client.StopAsync();
+            }
         }
 
         public async Task SendAudioAsync( IGuild Guild, string UserInput ) {
@@ -98,21 +108,28 @@ namespace JukeBot.Services {
                 var DiscordStream = AudioClient.CreatePCMStream( AudioApplication.Music, 2880 );
                 Task writer;
                 Task<int> reader;
+                this.Stop = this.Pause = false;
+                this.Playing = true;
                 while ( this.AudioData.Position < this.AudioData.Length )
-                    if ( !this.Pause ) {
+                    if ( this.Pause ) {
+                        if (this.Stop) {
+                            break;
+                        }
+                        read_length = 0;
+                        await DiscordStream.WriteAsync(new byte[512], 0, 512);
+                    } else {
                         writer = DiscordStream.WriteAsync(buffer[flipflop ? 0 : 1], 0, read_length);
                         flipflop = !flipflop;
                         reader = this.AudioData.ReadAsync(buffer[flipflop ? 0 : 1], 0, buffer_size);
                         read_length = await reader;
                         await writer;
-                    } else {
-                        await DiscordStream.WriteAsync( new byte[512], 0, 512 );
-                        read_length = 0;
                     }
                 await this.AudioData.FlushAsync();
                 //await Output.CopyToAsync(DiscordStream);
                 await DiscordStream.FlushAsync();
-                await JukeBot.DiscordClient.SetGameAsync( "" );
+                if (this.ConnectedChannels.Count > 0 && this.ConnectedChannels.TryRemove(Guild.Id, out AudioClient)) await AudioClient.StopAsync();
+                await JukeBot.DiscordClient.SetGameAsync(null);
+                this.Playing = false;
             }
         }
 

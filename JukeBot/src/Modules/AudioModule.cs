@@ -40,8 +40,7 @@ namespace JukeBot.Modules {
             await this._Service.LeaveAudio( this.Context.Guild );
             await this._Service.JoinAudio( this.Context.Guild, ( this.Context.User as IVoiceState ).VoiceChannel );
             await this._Service.SendAudioAsync( this.Context.Guild, LinkOrSearchTerm );
-            await this._Service.LeaveAudio( this.Context.Guild );
-            await Log( new LogMessage( LogSeverity.Info, "Play", $"Bot is leaving {this.Context.Channel}" ) );
+            await Log(new LogMessage(LogSeverity.Info, "Play", $"Bot finished playing audio in {this.Context.Channel}"));
         }
 
         [Command( "seek" , RunMode = RunMode.Async)]
