@@ -10,6 +10,9 @@ namespace JukeBot.Services {
     public class ImageService {
         public async Task<String> GoogleImageSearch( String Query, int Num = 1 ) {
             //TODO: Num has no purpose right now, add implementation to get the X number image result
+            //Can jus tbe A loop that catches errors and tries again with the next index
+            //OR
+            //User can input a parameter for the number image they want (ex. feelsbadman.jpg #4)
 
             String Key = "AIzaSyCimF2sJLwecmssiwDg8Jdb-f4NAgv-RBk", CX = "001762016596902704548:ugobeno8bsc", Content;
 
