@@ -53,6 +53,7 @@ namespace JukeBot.Modules {
         [Command("pause", RunMode = RunMode.Async)]
         public async Task PauseCmd() => await this._Service.PauseAudio();
 
+        /*
         [Command( "playlist", RunMode = RunMode.Async )]
         [Alias( "pl" )]
         public async Task PlaylistCmd( [Remainder] string PlaylistLink ) {
@@ -68,6 +69,7 @@ namespace JukeBot.Modules {
             foreach ( var ID in IDArray ) await this._Service.SendAudioAsync( this.Context.Guild, ID );
             await this._Service.LeaveAudio( this.Context.Guild );
         }
+        */
 
         [Command( "queue", RunMode = RunMode.Async )]
         [Alias( "q" )]
