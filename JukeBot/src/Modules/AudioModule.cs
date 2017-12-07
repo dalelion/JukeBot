@@ -44,16 +44,20 @@ namespace JukeBot.Modules {
             await Log( new LogMessage( LogSeverity.Info, "Play", $"Bot is leaving {this.Context.Channel}" ) );
         }
 
-        [Command( "seek" , RunMode = RunMode.Async)]
+        [Command( "seek", RunMode = RunMode.Async )]
         public async Task SeekCmd( [Remainder] string PercentDuration ) {
+            await Log( new LogMessage( LogSeverity.Info, "seek", $"Seeking {PercentDuration}%" ) );
             double p = 0;
-            if ( double.TryParse( PercentDuration, out p ) ) await this._Service.SeekAudio( p );
+            if ( double.TryParse( PercentDuration, out p ) )
+                await this._Service.SeekAudio( p );
         }
 
-        [Command("pause", RunMode = RunMode.Async)]
+        [Command( "pause", RunMode = RunMode.Async )]
         public async Task PauseCmd() => await this._Service.PauseAudio();
 
         /*
+         * Temporarily removed for updating
+         * 
         [Command( "playlist", RunMode = RunMode.Async )]
         [Alias( "pl" )]
         public async Task PlaylistCmd( [Remainder] string PlaylistLink ) {
@@ -90,8 +94,8 @@ namespace JukeBot.Modules {
         [Command( "playqueue", RunMode = RunMode.Async )]
         [Alias( "playq" )]
         public async Task PlayQueue() {
+            await this._Service.LeaveAudio( this.Context.Guild );
             while ( Queue.Count > 0 ) {
-                await this._Service.LeaveAudio( this.Context.Guild );
                 await this._Service.JoinAudio( this.Context.Guild, ( this.Context.User as IVoiceState ).VoiceChannel );
 
                 this.NextSong = Queue.Count != 1 ? $", next song {Queue.ElementAt( 1 )}" : "";
@@ -123,10 +127,8 @@ namespace JukeBot.Modules {
             //await _service
         }
 
-        //TODO: ****************
-        //Insert, List queue, view at index (range?)
-        //Play next song
-        //Song length at start of song
+        //TODO: Overhaul Queue - Insert, List queue, view at index (range?), Play next song
+        //TODO: Display song length at start of song
 
         public static Task Log( LogMessage msg ) {
             Console.WriteLine( msg.ToString() );

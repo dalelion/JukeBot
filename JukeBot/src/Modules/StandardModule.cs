@@ -51,6 +51,8 @@ namespace JukeBot.Modules {
 
             SB.AppendLine( "**Audio Commands**" );
             SB.AppendLine( "**!play {Song name or link}** = Plays the song *[Also !p]*" );
+            SB.AppendLine( "**!pause = Pauses/Unpauses the current song." );
+            SB.AppendLine( "**!Seek {0-100}** = Seeks through the current song by percentages (ex. *!seek 50* skips to the middle)." );
             SB.AppendLine( "**!playlist {PlaylistLink}** = Plays a whole playlist *[Also !pl]*" );
             SB.AppendLine( "**!queue {Song name or link}** = Add a song to the queue *[Also !q]*" );
             SB.AppendLine( "**!playqueue** = Plays the queue *[Also !playq]*" );

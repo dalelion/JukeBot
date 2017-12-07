@@ -18,6 +18,7 @@ namespace JukeBot.Modules {
         [Command( "jpg", RunMode = RunMode.Async )]
         [Summary( "Searches Google Images for the first image that matches" )]
         public async Task JPG( [Remainder] String SearchTerm ) {
+            await Log( new LogMessage( LogSeverity.Info, "JPG", $"Searching for {SearchTerm}.JPG" ) );
             await ReplyAsync( await _Service.GoogleImageSearch( SearchTerm ) );
         }
 
@@ -25,7 +26,13 @@ namespace JukeBot.Modules {
         [Alias( "g" )]
         [Summary( "Searches Tenor for the first gif that matches" )]
         public async Task GIF( [Remainder] String SearchTerm ) {
+            await Log( new LogMessage( LogSeverity.Info, "GIF", $"Searching for {SearchTerm}.GIF" ) );
             await ReplyAsync( await _Service.TenorSearch( SearchTerm ) );
+        }
+
+        public static Task Log( LogMessage msg ) {
+            Console.WriteLine( msg.ToString() );
+            return Task.CompletedTask;
         }
     }
 }

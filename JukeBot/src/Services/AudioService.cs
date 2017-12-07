@@ -60,7 +60,7 @@ namespace JukeBot.Services {
                 UserInput = YoutubeClient.ParseVideoId( UserInput );
             } else {
                 //var SearchList = await YTC.SearchAsync( UserInput );
-
+                
                 HttpClient _httpClient = new HttpClient();
 
                 string encodedSearchQuery = WebUtility.UrlEncode( UserInput );
