@@ -63,26 +63,27 @@ namespace JukeBot.Services {
                 
                 HttpClient _httpClient = new HttpClient();
 
-                string encodedSearchQuery = WebUtility.UrlEncode( UserInput );
+                string EncodedSearchQuery = WebUtility.UrlEncode( UserInput );
 
-                string request = $"https://www.youtube.com/search_ajax?style=xml&search_query={encodedSearchQuery}";
+                string Request = $"https://www.youtube.com/search_ajax?style=xml&search_query={EncodedSearchQuery}";
 
-                var response = await _httpClient.GetStringAsync( request ).ConfigureAwait( false );
+                var Response = await _httpClient.GetStringAsync( Request ).ConfigureAwait( false );
 
-                var searchResultsXml = XElement.Parse( response ).StripNamespaces();
+                var SearchResultsXml = XElement.Parse( Response ).StripNamespaces();
 
-                var videoIds = searchResultsXml.Descendants( "encrypted_id" ).Select( e => ( string )e );
+                var VideoIds = SearchResultsXml.Descendants( "encrypted_id" ).Select( e => ( string )e );
 
-                UserInput = videoIds.First();
+                UserInput = VideoIds.First();
             }
+            
+            var MediaInfo = await YTC.GetVideoMediaStreamInfosAsync( UserInput );
+            
+            var ASI = MediaInfo.Audio.OrderBy( x => x.Bitrate ).Last();
 
+            var VideoInfo = await YTC.GetVideoAsync( UserInput );
 
-            var Video = await YTC.GetVideoAsync( UserInput );
-
-            var ASI = Video.AudioStreamInfos.OrderBy( x => x.Bitrate ).Last();
-
-            var Title = Video.Title;
-
+            var Title = VideoInfo.Title; //VideoInfo.ToString();            ;
+            
             var RGX = new Regex( "[^a-zA-Z0-9 -]" );
             Title = RGX.Replace( Title, "" );
 
