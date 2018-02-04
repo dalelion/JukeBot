@@ -44,13 +44,14 @@ namespace JukeBot.Modules {
             await Log( new LogMessage( LogSeverity.Info, "Play", $"Bot is leaving {this.Context.Channel}" ) );
         }
 
-        [Command( "seek" , RunMode = RunMode.Async)]
+        [Command( "seek", RunMode = RunMode.Async )]
         public async Task SeekCmd( [Remainder] string PercentDuration ) {
             double p = 0;
-            if ( double.TryParse( PercentDuration, out p ) ) await this._Service.SeekAudio( p );
+            if ( double.TryParse( PercentDuration, out p ) )
+                await this._Service.SeekAudio( p );
         }
 
-        [Command("pause", RunMode = RunMode.Async)]
+        [Command( "pause", RunMode = RunMode.Async )]
         public async Task PauseCmd() => await this._Service.PauseAudio();
 
         /*
@@ -90,10 +91,11 @@ namespace JukeBot.Modules {
         [Command( "playqueue", RunMode = RunMode.Async )]
         [Alias( "playq" )]
         public async Task PlayQueue() {
-            while ( Queue.Count > 0 ) {
-                await this._Service.LeaveAudio( this.Context.Guild );
-                await this._Service.JoinAudio( this.Context.Guild, ( this.Context.User as IVoiceState ).VoiceChannel );
 
+            await this._Service.LeaveAudio( this.Context.Guild );
+            await this._Service.JoinAudio( this.Context.Guild, ( this.Context.User as IVoiceState ).VoiceChannel );
+
+            while ( Queue.Count > 0 ) {
                 this.NextSong = Queue.Count != 1 ? $", next song {Queue.ElementAt( 1 )}" : "";
                 this.LeftInQueue = Queue.Count == 1 ? "There is 1 song in the queue." : $"There are {Queue.Count} song in the queue.";
                 await this.ReplyAsync( $"Now Playing ID:{Queue.First()}{this.NextSong}.\n{this.LeftInQueue}" );
@@ -112,16 +114,32 @@ namespace JukeBot.Modules {
 
         [Command( "removeat", RunMode = RunMode.Async )] //TODO: (add range ability?)
         public async Task RemoveNext( [Remainder] int Index ) {
+            String Msg = $"Removed item {Queue.ElementAt( Index )} at index {Index}";
             Queue.RemoveAt( Index );
-            await this.ReplyAsync( $"Removed item {Queue.ElementAt( Index )} at index {Index}" );
-            await Log( new LogMessage( LogSeverity.Info, "Queue", $"Removed item {Queue.ElementAt( Index )} at index {Index}" ) );
+            await this.ReplyAsync( Msg );
+            await Log( new LogMessage( LogSeverity.Info, "Queue", Msg ) );
         }
 
-        [Command( "stop", RunMode = RunMode.Async )]
-        public async Task StopSong() {
-            await Log( new LogMessage( LogSeverity.Error, "StopMethod", "Not Implemented", new NotImplementedException() ) );
-            //await _service
+        [Command( "skip", RunMode = RunMode.Async )]
+        [Alias("stop")]
+        public async Task Skip( ) {
+            await SeekCmd("100");
+            await this.ReplyAsync( "Skipped Song" );
+            await Log( new LogMessage( LogSeverity.Info, "Queue", "Skipped Song" ) );
         }
+        
+
+        //*********************************************************************************************************
+        //TODO: Spotify support
+
+        [Command( "Spotify", RunMode = RunMode.Async )]
+        [Alias( "spot" )]
+        public async Task Spotify() {
+            await this.ReplyAsync( "Spotify command triggered." );
+        }
+
+
+
 
         //TODO: ****************
         //Insert, List queue, view at index (range?)

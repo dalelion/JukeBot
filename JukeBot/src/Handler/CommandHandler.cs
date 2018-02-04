@@ -9,6 +9,7 @@ namespace JukeBot {
         private CommandService Commands;
         private DiscordSocketClient Client;
         private IDependencyMap Map;
+        
 
         public async Task Install( IDependencyMap _map ) {
             // Create Command Service, inject it into Dependency Map
