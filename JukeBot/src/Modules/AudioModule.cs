@@ -98,34 +98,55 @@ namespace JukeBot.Modules {
             while ( Queue.Count > 0 ) {
                 await this._Service.JoinAudio( this.Context.Guild, ( this.Context.User as IVoiceState ).VoiceChannel );
 
-                this.NextSong = Queue.Count != 1 ? $", next song {Queue.ElementAt( 1 )}" : "";
-                this.LeftInQueue = Queue.Count == 1 ? "There is 1 song in the queue." : $"There are {Queue.Count} song in the queue.";
-                await this.ReplyAsync( $"Now Playing ID:{Queue.First()}{this.NextSong}.\n{this.LeftInQueue}" );
-                await Log( new LogMessage( LogSeverity.Info, "Queue", $"Now Playing: {Queue.First()}{this.NextSong}.\n{this.LeftInQueue}" ) );
+                await this._Service.LeaveAudio( this.Context.Guild );
+                await this._Service.JoinAudio( this.Context.Guild, ( this.Context.User as IVoiceState ).VoiceChannel );
 
-                await this._Service.SendAudioAsync( this.Context.Guild, Queue.First() );
-                Queue.RemoveAt( 0 );
+                while ( Queue.Count > 0 ) {
+                    this.NextSong = Queue.Count != 1 ? $", next song {Queue.ElementAt( 1 )}" : "";
+                    this.LeftInQueue = Queue.Count == 1 ? "There is 1 song in the queue." : $"There are {Queue.Count} song in the queue.";
+                    await this.ReplyAsync( $"Now Playing ID:{Queue.First()}{this.NextSong}.\n{this.LeftInQueue}" );
+                    await Log( new LogMessage( LogSeverity.Info, "Queue", $"Now Playing: {Queue.First()}{this.NextSong}.\n{this.LeftInQueue}" ) );
+
+                    await this._Service.SendAudioAsync( this.Context.Guild, Queue.First() );
+                    Queue.RemoveAt( 0 );
+                }
+
+                await this.ReplyAsync( "Sorry, the queue is empty, !queue (or !q) to add more!" );
+                await Log( new LogMessage( LogSeverity.Info, "Queue", "Queue is empty" ) );
+
+                await this._Service.LeaveAudio( this.Context.Guild );
+                await Log( new LogMessage( LogSeverity.Info, "Queue", $"Bot is leaving {this.Context.Channel}" ) );
             }
-
-            await this.ReplyAsync( "Sorry, the queue is empty, !queue (or !q) to add more!" );
-            await Log( new LogMessage( LogSeverity.Info, "Queue", "Queue is empty" ) );
-
-            await this._Service.LeaveAudio( this.Context.Guild );
-            await Log( new LogMessage( LogSeverity.Info, "Queue", $"Bot is leaving {this.Context.Channel}" ) );
         }
 
         [Command( "removeat", RunMode = RunMode.Async )] //TODO: (add range ability?)
         public async Task RemoveNext( [Remainder] int Index ) {
+            String Msg = $"Removed item {Queue.ElementAt( Index )} at index {Index}";
             Queue.RemoveAt( Index );
-            await this.ReplyAsync( $"Removed item {Queue.ElementAt( Index )} at index {Index}" );
-            await Log( new LogMessage( LogSeverity.Info, "Queue", $"Removed item {Queue.ElementAt( Index )} at index {Index}" ) );
+            await this.ReplyAsync( Msg );
+            await Log( new LogMessage( LogSeverity.Info, "Queue", Msg ) );
         }
 
-        [Command( "stop", RunMode = RunMode.Async )]
-        public async Task StopSong() {
-            await Log( new LogMessage( LogSeverity.Error, "StopMethod", "Not Implemented", new NotImplementedException() ) );
-            //await _service
+        [Command( "skip", RunMode = RunMode.Async )]
+        [Alias("stop")]
+        public async Task Skip( ) {
+            await SeekCmd("100");
+            await this.ReplyAsync( "Skipped Song" );
+            await Log( new LogMessage( LogSeverity.Info, "Queue", "Skipped Song" ) );
         }
+        
+
+        //*********************************************************************************************************
+        //TODO: Spotify support
+
+        [Command( "Spotify", RunMode = RunMode.Async )]
+        [Alias( "spot" )]
+        public async Task Spotify() {
+            await this.ReplyAsync( "Spotify command triggered." );
+        }
+
+
+
 
         //TODO: Overhaul Queue - Insert, List queue, view at index (range?), Play next song
         //TODO: Display song length at start of song

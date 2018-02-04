@@ -6,9 +6,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Discord.Net.Commands" Version="1.0.0-rc" />
-    <PackageReference Include="Discord.Net.WebSocket" Version="1.0.0-rc" />
-    <PackageReference Include="YoutubeExplode" Version="4.1.0-alpha2" />
+    <PackageReference Include="Discord.Net.Commands" Version="1.0.2" />
+    <PackageReference Include="Discord.Net.WebSocket" Version="1.0.2" />
+    <PackageReference Include="FluentSpotifyApi" Version="1.4.0" />
+    <PackageReference Include="FluentSpotifyApi.Core" Version="1.4.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+    <PackageReference Include="YoutubeExplode" Version="4.0.0" />
   </ItemGroup>
 
   <ItemGroup>

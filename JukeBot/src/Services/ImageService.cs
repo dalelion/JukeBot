@@ -18,6 +18,10 @@ namespace JukeBot.Services {
 
             HttpResponseMessage Response = await new HttpClient().GetAsync( $"https://www.googleapis.com/customsearch/v1?q={Query.Replace( ' ', '+' )}&key={Key}&cx={CX}&searchtype=image&num={Num}" );
 
+            //HttpResponseMessage R = await new HttpClient().GetAsync( "https://api.cognitive.microsoft.com/bing/v5.0/images/search" );
+
+            //await new HttpMessageInvoker().SendAsync(new HttpRequestMessage().Headers.Add("Ocp-Apim-Subscription-Key", "93d947f2eeab4734a60a9d23ee5df4c0" ) )
+
             Content = Response.Content.ReadAsStringAsync().Result;
 
             return Content.Substring( Content.LastIndexOf( "\"src\":" ) ).Split( '\"' )[3];

@@ -12,6 +12,7 @@ using Discord.Audio;
 using YoutubeExplode;
 using YoutubeExplode.Models;
 using System.Xml.Linq;
+using Newtonsoft.Json;
 
 namespace JukeBot.Services {
     public class AudioService {
@@ -155,6 +156,42 @@ namespace JukeBot.Services {
 #endif
         }
 
+        
+        public async Task SendWEBMAudioAsync( IGuild Guild, string UserInput ) {
+
+            HttpClient hc = new HttpClient();
+
+
+            //WebClient wc = new WebClient();
+
+            
+
+            var resp = await hc.GetAsync( "http://a.4cdn.org/wsg/thread/2090235.json" );
+            var q = JsonConvert.DeserializeObject<nig>( await resp.Content.ReadAsStringAsync() );
+            Console.WriteLine( "test" );
+            String newfile;
+            foreach ( var i in q.Posts ) {
+                if ( i.ext == ".webm" ) {
+                    newfile = i.tim + i.ext;
+                    Console.WriteLine( i.filename + " | " + newfile );
+
+                    DownloadFile( $"http://i.4cdn.org/wsg/{i.tim}.webm", i.filename + i.ext );
+
+                    //wc.DownloadFile( $"http://i.4cdn.org/wsg/{i.tim}.webm", i.filename + i.ext );
+                }
+            }
+
+        }
+
+        private Process DownloadFile(String url, String FileName) {
+
+            return Process.Start( new ProcessStartInfo {
+                FileName = "FileDownloader.exe",
+                Arguments = $"{url} {FileName}"
+            } );
+
+        }
+
 
         public static Task Log( LogMessage Message ) {
             Console.WriteLine( Message.ToString() );
@@ -179,6 +216,16 @@ namespace JukeBot.Services {
 
             return result;
         }
+    }
+
+    class nig {
+        [JsonProperty( "posts" )]
+        public System.Collections.Generic.List<nog> Posts { get; set; }
+    }
+    class nog {
+        public Int64 tim { get; set; }
+        public string ext { get; set; }
+        public string filename { get; set; }
     }
 
 
