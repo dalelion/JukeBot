@@ -95,28 +95,23 @@ namespace JukeBot.Modules {
         [Alias( "playq" )]
         public async Task PlayQueue() {
             await this._Service.LeaveAudio( this.Context.Guild );
+            await this._Service.JoinAudio( this.Context.Guild, ( this.Context.User as IVoiceState ).VoiceChannel );
             while ( Queue.Count > 0 ) {
-                await this._Service.JoinAudio( this.Context.Guild, ( this.Context.User as IVoiceState ).VoiceChannel );
 
-                await this._Service.LeaveAudio( this.Context.Guild );
-                await this._Service.JoinAudio( this.Context.Guild, ( this.Context.User as IVoiceState ).VoiceChannel );
+                this.NextSong = Queue.Count != 1 ? $", next song {Queue.ElementAt( 1 )}" : "";
+                this.LeftInQueue = Queue.Count == 1 ? "There is 1 song in the queue." : $"There are {Queue.Count} song in the queue.";
+                await this.ReplyAsync( $"Now Playing ID:{Queue.First()}{this.NextSong}.\n{this.LeftInQueue}" );
+                await Log( new LogMessage( LogSeverity.Info, "Queue", $"Now Playing: {Queue.First()}{this.NextSong}.\n{this.LeftInQueue}" ) );
 
-                while ( Queue.Count > 0 ) {
-                    this.NextSong = Queue.Count != 1 ? $", next song {Queue.ElementAt( 1 )}" : "";
-                    this.LeftInQueue = Queue.Count == 1 ? "There is 1 song in the queue." : $"There are {Queue.Count} song in the queue.";
-                    await this.ReplyAsync( $"Now Playing ID:{Queue.First()}{this.NextSong}.\n{this.LeftInQueue}" );
-                    await Log( new LogMessage( LogSeverity.Info, "Queue", $"Now Playing: {Queue.First()}{this.NextSong}.\n{this.LeftInQueue}" ) );
-
-                    await this._Service.SendAudioAsync( this.Context.Guild, Queue.First() );
-                    Queue.RemoveAt( 0 );
-                }
-
-                await this.ReplyAsync( "Sorry, the queue is empty, !queue (or !q) to add more!" );
-                await Log( new LogMessage( LogSeverity.Info, "Queue", "Queue is empty" ) );
-
-                await this._Service.LeaveAudio( this.Context.Guild );
-                await Log( new LogMessage( LogSeverity.Info, "Queue", $"Bot is leaving {this.Context.Channel}" ) );
+                await this._Service.SendAudioAsync( this.Context.Guild, Queue.First() );
+                Queue.RemoveAt( 0 );
             }
+
+            await this.ReplyAsync( "Sorry, the queue is empty, !queue (or !q) to add more!" );
+            await Log( new LogMessage( LogSeverity.Info, "Queue", "Queue is empty" ) );
+
+            await this._Service.LeaveAudio( this.Context.Guild );
+            await Log( new LogMessage( LogSeverity.Info, "Queue", $"Bot is leaving {this.Context.Channel}" ) );
         }
 
         [Command( "removeat", RunMode = RunMode.Async )] //TODO: (add range ability?)
