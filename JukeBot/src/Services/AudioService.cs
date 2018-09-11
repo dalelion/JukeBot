@@ -156,28 +156,74 @@ namespace JukeBot.Services {
 #endif
         }
 
+        private async Task StreamAudio(IGuild Guild, String Filename) {
+
+            Console.WriteLine("Streaming");
+
+            IAudioClient AudioClient;
+
+            await JukeBot.DiscordClient.SetGameAsync( Filename );
+
+            if ( this.ConnectedChannels.TryGetValue( Guild.Id, out AudioClient ) ) {
+                var Output = this.CreateStream( "4chan/" + Filename ).StandardOutput.BaseStream;
+                this.AudioData = new MemoryStream();
+                await Output.CopyToAsync( this.AudioData );
+                await Output.FlushAsync();
+                Output.Dispose();
+                int read_length = 0;
+                bool flipflop = false;
+                int buffer_size = 2048;
+                var buffer = new[] { new byte[buffer_size], new byte[buffer_size] };
+                this.AudioData.Seek( 0x0, SeekOrigin.Begin );
+                var DiscordStream = AudioClient.CreatePCMStream( AudioApplication.Music, 2880 );
+                Task writer;
+                Task<int> reader;
+                while ( this.AudioData.Position < this.AudioData.Length )
+                    if ( !this.Pause ) {
+                        writer = DiscordStream.WriteAsync( buffer[flipflop ? 0 : 1], 0, read_length );
+                        flipflop = !flipflop;
+                        reader = this.AudioData.ReadAsync( buffer[flipflop ? 0 : 1], 0, buffer_size );
+                        read_length = await reader;
+                        await writer;
+                    } else {
+                        await DiscordStream.WriteAsync( new byte[512], 0, 512 );
+                        read_length = 0;
+                    }
+                await this.AudioData.FlushAsync();
+                //await Output.CopyToAsync(DiscordStream);
+                await DiscordStream.FlushAsync();
+                await JukeBot.DiscordClient.SetGameAsync( "" );
+            }
+
+
+        }
+
         
         public async Task SendWEBMAudioAsync( IGuild Guild, string UserInput ) {
 
-            HttpClient hc = new HttpClient();
+            //http://boards.4chan.org/{BOARD}/thread/{THREAD#}
+            //http://a.4cdn.org/{BOARD}/thread/{THREAD#}.json
 
+            Regex RGX = new Regex( @"[a-zA-Z]+/[a-zA-Z]+/[0-9]+" );
 
-            //WebClient wc = new WebClient();
+            String Board = "" + RGX.Match( UserInput );
+            Board = Board.Split('/' )[0];
 
+            String JSONLink = "http://a.4cdn.org/" + RGX.Match(UserInput) + ".json", FileName;
             
+            HttpClient HTTPC = new HttpClient();
 
-            var resp = await hc.GetAsync( "http://a.4cdn.org/wsg/thread/2090235.json" );
-            var q = JsonConvert.DeserializeObject<nig>( await resp.Content.ReadAsStringAsync() );
-            Console.WriteLine( "test" );
-            String newfile;
-            foreach ( var i in q.Posts ) {
-                if ( i.ext == ".webm" ) {
-                    newfile = i.tim + i.ext;
-                    Console.WriteLine( i.filename + " | " + newfile );
+            var Response = await HTTPC.GetAsync( JSONLink );
+            var JSON = JsonConvert.DeserializeObject<nig>( await Response.Content.ReadAsStringAsync() );
+            foreach ( var Post in JSON.Posts ) {
+                if ( Post.ext == ".webm" ) {
+                    
+                    FileName = Post.filename + Post.ext;
 
-                    DownloadFile( $"http://i.4cdn.org/wsg/{i.tim}.webm", i.filename + i.ext );
+                    DownloadFile( $"http://i.4cdn.org/{Board}/{Post.tim}.webm", "4chan/" + FileName ).WaitForExit();
 
-                    //wc.DownloadFile( $"http://i.4cdn.org/wsg/{i.tim}.webm", i.filename + i.ext );
+                    await StreamAudio( Guild, FileName );
+
                 }
             }
 

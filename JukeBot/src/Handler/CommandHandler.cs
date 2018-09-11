@@ -54,8 +54,7 @@ namespace JukeBot {
         public async Task PostfixCommandHandler( SocketMessage ParameterMessage ) {
             // Don't handle the command if it is a system message
             SocketUserMessage Message = ParameterMessage as SocketUserMessage;
-            if ( Message == null || Message.Author.IsBot || Message.Author.Id.Equals( Client.CurrentUser.Id ) )
-                return;
+            if ( Message == null || Message.Author.IsBot || Message.Author.Id.Equals( Client.CurrentUser.Id ) || Message.Content.ToLower().StartsWith("http") ) return;
 
             string Content = Message.Content.ToLower();
 

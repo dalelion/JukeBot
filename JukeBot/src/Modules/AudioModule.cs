@@ -44,6 +44,16 @@ namespace JukeBot.Modules {
             await Log( new LogMessage( LogSeverity.Info, "Play", $"Bot is leaving {this.Context.Channel}" ) );
         }
 
+        [Command( "play4chan", RunMode = RunMode.Async )]
+        [Alias( "p4" )]
+        public async Task Play4chanCmd( [Remainder] string UserInput ) {
+            await this._Service.LeaveAudio( this.Context.Guild );
+            await this._Service.JoinAudio( this.Context.Guild, ( this.Context.User as IVoiceState ).VoiceChannel );
+            await this._Service.SendWEBMAudioAsync( this.Context.Guild, UserInput );
+            await this._Service.LeaveAudio( this.Context.Guild );
+            await Log( new LogMessage( LogSeverity.Info, "Play", $"Bot is leaving {this.Context.Channel}" ) );
+        }
+
         [Command( "seek", RunMode = RunMode.Async )]
         public async Task SeekCmd( [Remainder] string PercentDuration ) {
             await Log( new LogMessage( LogSeverity.Info, "seek", $"Seeking {PercentDuration}%" ) );
@@ -55,9 +65,7 @@ namespace JukeBot.Modules {
         [Command( "pause", RunMode = RunMode.Async )]
         public async Task PauseCmd() => await this._Service.PauseAudio();
 
-        /*
-         * Temporarily removed for updating
-         * 
+        
         [Command( "playlist", RunMode = RunMode.Async )]
         [Alias( "pl" )]
         public async Task PlaylistCmd( [Remainder] string PlaylistLink ) {
@@ -66,14 +74,13 @@ namespace JukeBot.Modules {
 
             var YTC = new YoutubeClient();
 
-            var PlayListInfo = await YTC.GetPlaylistInfoAsync( YoutubeClient.ParsePlaylistId( PlaylistLink ) );
+            var PlayListInfo = await YTC.GetPlaylistAsync( YoutubeClient.ParsePlaylistId( PlaylistLink ) );
 
-            var IDArray = PlayListInfo.VideoIds.ToArray();
+            var IDArray = PlayListInfo.Videos.ToArray();
 
             foreach ( var ID in IDArray ) await this._Service.SendAudioAsync( this.Context.Guild, ID );
             await this._Service.LeaveAudio( this.Context.Guild );
         }
-        */
 
         [Command( "queue", RunMode = RunMode.Async )]
         [Alias( "q" )]
